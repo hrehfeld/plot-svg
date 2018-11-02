@@ -6,6 +6,8 @@ from collections import OrderedDict as odict
 import math
 
 
+BEZIER_STEPS = 50
+
 svg_tpl = '''<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
@@ -263,7 +265,7 @@ def parse_path(tokens):
                 elif mode == QUADRATIC_BEZIER:
                     bezier.append(new)
                     if len(bezier) == 3:
-                        r += render_bezier(bezier, 9)
+                        r += render_bezier(bezier, BEZIER_STEPS + 1)
                         bezier.pop(0)
                 else:
                     raise Exception()
@@ -320,31 +322,8 @@ if __name__ == '__main__':
     for path_els in path_files:
         for paths in path_els:
             for ipath, path in enumerate(paths):
-                path_len = 0
-                for i, p in enumerate(path[:-1]):
-                    next_p = path[i + 1]
-                    d = length(next_p - p)
-                    path_len += d
-
-                if STEP is None:
-                    STEP = path_len / STEPS
-
-                resampled = []
-                x = 0
-                for i, p in enumerate(path[:-1]):
-                    next_p = path[i + 1]
-                    d = length(next_p - p)
-                    num_steps = int(d / STEP)
-                    while x < d:
-                        t = x / d
-                        new_p = interp(t, p, next_p)
-                        resampled.append(new_p)
-                        x += STEP
-                    x -= d
-                assert(x < STEP)
-                resampled.append(path[-1])
                 print('move %s %s' % (path[0].x, path[0].y))
-                for p in resampled:
+                for p in path:
                     print('plot %s %s' % (p.x, p.y))
                 #paths[ipath] = resampled
 
